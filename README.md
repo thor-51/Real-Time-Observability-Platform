@@ -1,178 +1,175 @@
-📊 Real-Time Observability Platform
+# 📊 Real-Time Observability Platform
 
-A production-inspired monitoring, logging, and observability stack for Node.js applications, integrating Grafana, Prometheus, Loki, and Docker.
-https://img.shields.io/badge/License-MIT-yellow.svg
-https://img.shields.io/badge/node.js-18.x-green
-https://img.shields.io/badge/docker-compose-blue
+A lightweight Node.js/Express service instrumented for observability — exposing Prometheus metrics out of the box and shipping structured logs to Loki, with Prometheus wired up via Docker Compose.
 
-📖 Overview
+## Overview
 
-Modern applications require more than just functional code—they require deep visibility into their inner workings. This project demonstrates how to build a complete observability stack for a Node.js application, enabling developers and operators to:
+This repo is a small, hands-on example of instrumenting a Node.js application for monitoring instead of bolting observability on as an afterthought. The Express server exposes:
 
-Monitor application health and performance metrics.
-Track critical runtime statistics in real-time.
-Analyze centralized logs for debugging and auditing.
-Diagnose issues with correlated metrics and logs.
-The entire stack is containerized with Docker Compose, simulating a production-style environment commonly used in modern backend systems and cloud-native architectures.
+- A Prometheus-compatible `/metrics` endpoint with default Node.js runtime metrics plus two custom metrics (a request counter and a request-duration histogram).
+- Structured logs (via Winston) shipped to Loki.
+- A `/slow` route that simulates variable-latency work and randomly throws errors, so there's actually something interesting to look at on a dashboard.
 
-✨ Features
+Prometheus itself is started via Docker Compose, scraping the app's `/metrics` endpoint on an interval.
 
-📈 Metrics Monitoring
+## Tech Stack
 
-Automatically collect and expose critical Node.js runtime metrics, including:
+| Layer | Technology | Purpose |
+|---|---|---|
+| Application | Node.js, Express 5 | HTTP server being monitored |
+| Metrics | prom-client | Collects and exposes Prometheus metrics from the app |
+| Request timing | response-time | Middleware that measures request duration |
+| Logging | Winston + winston-loki | Structured logging, shipped to Loki |
+| Metrics storage | Prometheus | Scrapes and stores time-series metrics |
+| Orchestration | Docker, Docker Compose | Runs the Prometheus container |
 
-Process CPU and Memory Usage
-Heap Utilization (Total, Used, Available)
-Event Loop Lag
-Active Requests and Handlers
-Application Uptime and Restart Count
-Node.js Runtime Information
-📜 Centralized Logging
+## Project Structure
 
-Aggregate, store, and analyze application logs from a single, powerful interface:
-
-Structured Logging for better parsing and querying.
-Error Tracking to quickly identify failures.
-Log Filtering & Searching to pinpoint specific issues.
-Real-time Log Streaming for live debugging.
-📊 Grafana Dashboards
-
-Visualize all data through beautiful, interactive dashboards:
-
-CPU & Memory Usage Trends
-Heap Allocation Patterns
-Event Loop Performance
-Request Activity Monitoring
-Comprehensive Application Health Overview
-🐳 Containerized Deployment
-
-The entire stack runs seamlessly using Docker Compose:
-
-Easy Setup with a single command.
-Reproducible development and production-like environments.
-Simplified Management of all services and their dependencies.
-🏗️ System Architecture
-
-The platform is composed of four main services working in concert:
-
-🛠️ Technology Stack
-
-Category	Technology	Purpose
-Backend	Node.js, Express.js	Monitored application framework.
-Metrics	Prometheus	Time-series database for metrics collection and storage.
-Logging	Loki	Horizontally-scalable log aggregation system.
-Visualization	Grafana	Analytics and interactive visualization platform.
-Orchestration	Docker, Docker Compose	Containerization and service orchestration.
-📂 Project Structure
-
-A quick look at the repository layout:
-
-text
+```
 Real-Time-Observability-Platform/
-├── app/                        # Main application code
-│   ├── index.js               # Application entry point
-│   └── util.js                # Utility functions (e.g., metrics, logging)
-├── grafana/                   # Grafana configuration (future enhancement)
-│   ├── dashboards/            # Custom dashboard JSON definitions
-│   └── provisioning/          # Datasource and dashboard provisioning
-├── screenshots/               # Screenshots of the running system
-│   ├── dashboard.png
-│   └── logs.png
-├── docker-compose.yml         # Defines and runs all services
-├── prometheus-config.yml      # Prometheus scrape and storage configuration
-├── package.json               # Node.js dependencies
+├── index.js               # Express app: routes, metrics, logging setup
+├── util.js                # dosomeHeavyTask() helper used by the /slow route
+├── package.json           # Dependencies (express, prom-client, response-time, winston, winston-loki)
 ├── package-lock.json
-└── README.md                  # This file
-🚀 Getting Started
+├── docker-compose.yml      # Spins up the Prometheus container
+├── prometheus-config.yml   # Prometheus scrape configuration
+└── README.md
+```
 
-Follow these simple steps to get the platform up and running on your local machine.
+## Prerequisites
 
-Prerequisites
+- Node.js 18 or later
+- Docker and Docker Compose
+- (Optional) A running Loki instance if you want to actually see the shipped logs somewhere
 
-Docker and Docker Compose installed on your system.
-Git (to clone the repository).
-Installation & Setup
+## Getting Started
 
-Clone the repository:
-bash
+### 1. Clone the repo
+
+```bash
 git clone https://github.com/thor-51/Real-Time-Observability-Platform.git
 cd Real-Time-Observability-Platform
-Start all services:
-The docker-compose.yml file orchestrates everything. Launch it with:
-bash
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Point Prometheus at your app
+
+`prometheus-config.yml` ships with a scrape target hardcoded to a specific machine's local network IP (`172.20.10.7:8000`). That address is specific to the original author's network and almost certainly won't reach your machine. Open `prometheus-config.yml` and change the target to wherever your Express app will actually be reachable from the Prometheus container, for example:
+
+```yaml
+global:
+  scrape_interval: 4s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
+```
+
+`host.docker.internal:8000` works out of the box on Docker Desktop (Mac/Windows). On Linux, use your machine's actual LAN IP instead (find it with `ip addr` or `hostname -I`).
+
+### 4. Start the Express app
+
+```bash
+node index.js
+```
+
+You should see:
+
+```
+Express server started at http://localhost:8000
+```
+
+### 5. Start Prometheus
+
+```bash
 docker compose up -d
-This command runs the services in the background. Use docker compose logs -f to follow the logs.
-Verify running containers:
-bash
-docker ps
-🌐 Access the Services
+```
 
-Once started, you can access the different components via your browser:
+This builds and runs the `prom-server` container defined in `docker-compose.yml`, mounting `prometheus-config.yml` into it and exposing it on port `9090`.
 
-Service	URL	Default Credentials
-Express Application	http://localhost:8000	N/A
-Prometheus	http://localhost:9090	N/A
-Grafana	http://localhost:3000	admin / admin
-Note: For Grafana, you will be prompted to change the default password upon first login.
-📈 Dashboard & Metrics
+### 6. Verify it's working
 
-The Grafana dashboards are pre-configured to visualize key metrics that are critical for understanding your application's health:
+- App: [http://localhost:8000](http://localhost:8000)
+- Raw metrics: [http://localhost:8000/metrics](http://localhost:8000/metrics)
+- Prometheus UI: [http://localhost:9090](http://localhost:9090) — check **Status → Targets** to confirm the `prometheus` job is `UP`.
 
-Application Metrics
+## Available Routes
 
-CPU: Process CPU usage, spikes, and average utilization.
-Memory: Heap total, used, available, and overall process memory.
-Runtime: Event loop lag, active handlers, active requests, and Node.js version.
-Requests: Request counts and service availability.
-Log Analysis
+| Method | Route | Description |
+|---|---|---|
+| GET | `/` | Returns a simple JSON greeting; logs an info message. |
+| GET | `/slow` | Simulates a variable-latency task (100ms–2.5s) via `util.js`. Has roughly a 1-in-8 chance of throwing a random error (`DB Payment Failure`, `DB Server is down`, `Access Denied`, or `Not Found Error`) to exercise error logging and metrics. |
+| GET | `/metrics` | Exposes metrics in Prometheus exposition format for scraping. |
 
-Using Loki, you can:
+## Metrics Exposed
 
-Search logs by keywords or specific error codes.
-Filter logs by severity levels (e.g., error, warn).
-Correlate log events with performance metrics to diagnose root causes.
-🎯 Use Cases & Learning Outcomes
+- **Default Node.js process metrics** (via `prom-client`'s `collectDefaultMetrics`): CPU usage, memory/heap usage, event loop lag, active handles, GC stats, etc.
+- **`total_req`** — Counter. Total number of requests received.
+- **`http_express_req_res_time`** — Histogram. Request duration in ms, labeled by `method`, `route`, and `status_code`.
 
-This project is an excellent practical example for concepts central to:
+Hit `/` and `/slow` a few times, then check `/metrics` or query `http_express_req_res_time` in the Prometheus UI to see them populate.
 
-Backend Engineering & SRE: Implementing production-ready monitoring.
-DevOps: Managing a microservices monitoring stack with Docker.
-Cloud Infrastructure: Understanding service discovery and data collection.
-Performance Analysis: Identifying bottlenecks and memory leaks.
-Key Learnings
+## Logging to Loki (Optional)
 
-Building this project provided hands-on experience with:
+The app is configured to ship logs via `winston-loki` to `http://127.0.0.1:3100`. Loki isn't included in `docker-compose.yml`, so if you want to actually receive those logs, run a Loki container yourself:
 
-Configuring and integrating Prometheus, Loki, and Grafana.
-Exposing custom application metrics in Node.js.
-Containerizing a multi-service environment with Docker Compose.
-Designing dashboards for effective system monitoring.
-🔮 Future Improvements
+```bash
+docker run -d --name loki -p 3100:3100 grafana/loki:2.9.0 -config.file=/etc/loki/local-config.yaml
+```
 
-The platform can be extended in numerous ways:
+If the Express app and Loki container can't reach each other on `127.0.0.1`, update the `host` value in the `LokiTransport` config in `index.js` accordingly (e.g. to `host.docker.internal` if Loki is running in Docker and the app is running on your host machine).
 
-Distributed Tracing: Integrate Jaeger or Tempo for end-to-end request tracing.
-Alerting: Add Alertmanager to send notifications (e.g., email, Slack) for critical conditions.
-Orchestration: Deploy on Kubernetes using Helm charts.
-Instrumentation: Adopt OpenTelemetry for standardized telemetry data collection.
-Custom Metrics: Add business-specific metrics (e.g., user signups, transactions).
-CI/CD: Automate the deployment and testing of the monitoring stack.
-🤝 Contributing
+## Visualizing with Grafana (Optional)
 
-Contributions, suggestions, and improvements are welcome!
-If you have an idea or find a bug, please feel free to open an issue or submit a pull request.
+Grafana isn't part of this repo's Docker Compose setup, but it's easy to add on top of what's already running:
 
-Fork the Project
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-Push to the Branch (git push origin feature/AmazingFeature)
-Open a Pull Request
-📄 License
+```bash
+docker run -d --name grafana -p 3000:3000 grafana/grafana
+```
 
-Distributed under the MIT License. See LICENSE (if added) for more information.
+Then open [http://localhost:3000](http://localhost:3000) (default login `admin` / `admin`, which it will prompt you to change), and add two data sources:
 
-⭐ Support
+- **Prometheus**: `http://host.docker.internal:9090` (or your host's LAN IP if not on Docker Desktop)
+- **Loki**: `http://host.docker.internal:3100` (if you started Loki as above)
 
-If you found this project useful, please consider giving it a star on GitHub! It helps others discover the project and motivates further improvements.
+From there you can build panels against `http_express_req_res_time`, `total_req`, the default Node.js metrics, and query/filter logs by error level straight from Loki.
 
-Built with ❤️ by Aryan Vatsal (thor-51)
+## Known Limitations
+
+- `docker-compose.yml` currently only provisions Prometheus — Loki and Grafana need to be run separately as shown above.
+- `prometheus-config.yml` ships with a scrape target hardcoded to a specific local network IP that will need to be changed for your machine.
+- There's no `start` script in `package.json` — run the app directly with `node index.js`.
+- `node_modules` is committed to the repository.
+
+## Roadmap
+
+- Add Loki and Grafana as services in `docker-compose.yml` so the full stack comes up with one command.
+- Add a `.gitignore` and stop committing `node_modules`.
+- Add provisioned Grafana dashboards (JSON definitions) instead of manual setup.
+- Add Alertmanager for threshold-based alerts (e.g. error rate, latency).
+- Containerize the Express app itself alongside the observability stack.
+- Add distributed tracing (OpenTelemetry + Jaeger/Tempo).
+
+## Contributing
+
+Contributions are welcome. To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m "Add your feature"`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a pull request
+
+## License
+
+`package.json` specifies the **ISC** license. No `LICENSE` file is currently included in the repository.
+
+## Author
+
+Built by **Aryan Vatsal** ([@thor-51](https://github.com/thor-51))
