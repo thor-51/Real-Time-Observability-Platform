@@ -1,314 +1,178 @@
-# 📊 Node.js Observability Stack
+📊 Real-Time Observability Platform
 
-> Production-inspired monitoring, logging, and observability platform for Node.js applications using Grafana, Prometheus, Loki, and Docker.
+A production-inspired monitoring, logging, and observability stack for Node.js applications, integrating Grafana, Prometheus, Loki, and Docker.
+https://img.shields.io/badge/License-MIT-yellow.svg
+https://img.shields.io/badge/node.js-18.x-green
+https://img.shields.io/badge/docker-compose-blue
 
-<p align="center">
-  <img src="screenshots/dashboard.png" width="100%" />
-</p>
+📖 Overview
 
-## 🚀 Overview
+Modern applications require more than just functional code—they require deep visibility into their inner workings. This project demonstrates how to build a complete observability stack for a Node.js application, enabling developers and operators to:
 
-Modern applications require more than just functional code—they require visibility.
+Monitor application health and performance metrics.
+Track critical runtime statistics in real-time.
+Analyze centralized logs for debugging and auditing.
+Diagnose issues with correlated metrics and logs.
+The entire stack is containerized with Docker Compose, simulating a production-style environment commonly used in modern backend systems and cloud-native architectures.
 
-This project demonstrates how to build a complete observability stack for a Node.js application, enabling developers to monitor application health, track performance metrics, analyze logs, and diagnose issues in real time.
+✨ Features
 
-The stack integrates:
+📈 Metrics Monitoring
 
-* 📈 Prometheus for metrics collection
-* 📊 Grafana for visualization and dashboards
-* 📜 Loki for centralized log aggregation
-* 🚀 Express.js as the monitored application
-* 🐳 Docker Compose for orchestration
+Automatically collect and expose critical Node.js runtime metrics, including:
 
-The goal is to simulate a production-style monitoring environment commonly used in modern backend systems and cloud-native architectures.
+Process CPU and Memory Usage
+Heap Utilization (Total, Used, Available)
+Event Loop Lag
+Active Requests and Handlers
+Application Uptime and Restart Count
+Node.js Runtime Information
+📜 Centralized Logging
 
----
+Aggregate, store, and analyze application logs from a single, powerful interface:
 
-# ✨ Features
+Structured Logging for better parsing and querying.
+Error Tracking to quickly identify failures.
+Log Filtering & Searching to pinpoint specific issues.
+Real-time Log Streaming for live debugging.
+📊 Grafana Dashboards
 
-### 📈 Metrics Monitoring
+Visualize all data through beautiful, interactive dashboards:
 
-Monitor critical Node.js runtime metrics such as:
+CPU & Memory Usage Trends
+Heap Allocation Patterns
+Event Loop Performance
+Request Activity Monitoring
+Comprehensive Application Health Overview
+🐳 Containerized Deployment
 
-* Process CPU Usage
-* Process Memory Usage
-* Heap Utilization
-* Event Loop Lag
-* Active Requests
-* Application Uptime
-* Process Restart Count
-* Node.js Runtime Information
+The entire stack runs seamlessly using Docker Compose:
 
----
+Easy Setup with a single command.
+Reproducible development and production-like environments.
+Simplified Management of all services and their dependencies.
+🏗️ System Architecture
 
-### 📜 Centralized Logging
+The platform is composed of four main services working in concert:
 
-Aggregate and analyze logs from a centralized dashboard.
+🛠️ Technology Stack
 
-Capabilities include:
+Category	Technology	Purpose
+Backend	Node.js, Express.js	Monitored application framework.
+Metrics	Prometheus	Time-series database for metrics collection and storage.
+Logging	Loki	Horizontally-scalable log aggregation system.
+Visualization	Grafana	Analytics and interactive visualization platform.
+Orchestration	Docker, Docker Compose	Containerization and service orchestration.
+📂 Project Structure
 
-* Structured application logs
-* Error tracking
-* Log filtering
-* Log searching
-* Real-time log streaming
+A quick look at the repository layout:
 
----
-
-### 📊 Grafana Dashboards
-
-Visualize application behavior through interactive dashboards.
-
-Current dashboards include:
-
-* CPU Usage Trends
-* Memory Consumption
-* Heap Allocation Patterns
-* Event Loop Performance
-* Request Activity Monitoring
-* Application Health Metrics
-
----
-
-### 🐳 Containerized Deployment
-
-Entire stack runs using Docker Compose.
-
-Benefits:
-
-* Easy setup
-* Reproducible environment
-* Local development support
-* Production-like deployment architecture
-
----
-
-# 🏗️ System Architecture
-
-```text
-                ┌──────────────────┐
-                │   Node.js App    │
-                │    (Express)     │
-                └────────┬─────────┘
-                         │
-         ┌───────────────┼────────────────┐
-         │                                │
-         ▼                                ▼
-
-┌──────────────────┐          ┌──────────────────┐
-│    Prometheus    │          │      Loki        │
-│ Metrics Storage  │          │  Log Storage     │
-└────────┬─────────┘          └────────┬─────────┘
-         │                              │
-         └──────────────┬───────────────┘
-                        ▼
-
-               ┌────────────────┐
-               │    Grafana     │
-               │ Visualization  │
-               └────────────────┘
-```
-
----
-
-# 🛠️ Technology Stack
-
-## Backend
-
-* Node.js
-* Express.js
-
-## Monitoring
-
-* Prometheus
-
-## Logging
-
-* Loki
-
-## Visualization
-
-* Grafana
-
-## Containerization
-
-* Docker
-* Docker Compose
-
----
-
-# 📂 Project Structure
-
-```text
-nodejs-observability-stack/
-│
-├── app/
-│   ├── server.js
-│   ├── routes/
-│   └── middleware/
-│
-├── prometheus/
-│   └── prometheus.yml
-│
-├── loki/
-│   └── config.yml
-│
-├── grafana/
-│   ├── dashboards/
-│   └── provisioning/
-│
-├── screenshots/
+text
+Real-Time-Observability-Platform/
+├── app/                        # Main application code
+│   ├── index.js               # Application entry point
+│   └── util.js                # Utility functions (e.g., metrics, logging)
+├── grafana/                   # Grafana configuration (future enhancement)
+│   ├── dashboards/            # Custom dashboard JSON definitions
+│   └── provisioning/          # Datasource and dashboard provisioning
+├── screenshots/               # Screenshots of the running system
 │   ├── dashboard.png
 │   └── logs.png
-│
-├── docker-compose.yml
-│
-└── README.md
-```
+├── docker-compose.yml         # Defines and runs all services
+├── prometheus-config.yml      # Prometheus scrape and storage configuration
+├── package.json               # Node.js dependencies
+├── package-lock.json
+└── README.md                  # This file
+🚀 Getting Started
 
----
+Follow these simple steps to get the platform up and running on your local machine.
 
-# ⚡ Getting Started
+Prerequisites
 
-## Clone Repository
+Docker and Docker Compose installed on your system.
+Git (to clone the repository).
+Installation & Setup
 
-```bash
-git clone https://github.com/thor-51/nodejs-observability-stack.git
-cd nodejs-observability-stack
-```
-
----
-
-## Start Services
-
-```bash
+Clone the repository:
+bash
+git clone https://github.com/thor-51/Real-Time-Observability-Platform.git
+cd Real-Time-Observability-Platform
+Start all services:
+The docker-compose.yml file orchestrates everything. Launch it with:
+bash
 docker compose up -d
-```
-
+This command runs the services in the background. Use docker compose logs -f to follow the logs.
 Verify running containers:
-
-```bash
+bash
 docker ps
-```
+🌐 Access the Services
 
----
+Once started, you can access the different components via your browser:
 
-# 🌐 Access Services
+Service	URL	Default Credentials
+Express Application	http://localhost:8000	N/A
+Prometheus	http://localhost:9090	N/A
+Grafana	http://localhost:3000	admin / admin
+Note: For Grafana, you will be prompted to change the default password upon first login.
+📈 Dashboard & Metrics
 
-| Service     | URL                   |
-| ----------- | --------------------- |
-| Express App | http://localhost:8000 |
-| Prometheus  | http://localhost:9090 |
-| Grafana     | http://localhost:3000 |
-| Loki        | Internal Service      |
+The Grafana dashboards are pre-configured to visualize key metrics that are critical for understanding your application's health:
 
----
+Application Metrics
 
-# 📈 Dashboard Metrics
+CPU: Process CPU usage, spikes, and average utilization.
+Memory: Heap total, used, available, and overall process memory.
+Runtime: Event loop lag, active handlers, active requests, and Node.js version.
+Requests: Request counts and service availability.
+Log Analysis
 
-The dashboard currently tracks:
+Using Loki, you can:
 
-### CPU Metrics
+Search logs by keywords or specific error codes.
+Filter logs by severity levels (e.g., error, warn).
+Correlate log events with performance metrics to diagnose root causes.
+🎯 Use Cases & Learning Outcomes
 
-* Process CPU Usage
-* CPU Spikes
-* Average CPU Utilization
+This project is an excellent practical example for concepts central to:
 
-### Memory Metrics
+Backend Engineering & SRE: Implementing production-ready monitoring.
+DevOps: Managing a microservices monitoring stack with Docker.
+Cloud Infrastructure: Understanding service discovery and data collection.
+Performance Analysis: Identifying bottlenecks and memory leaks.
+Key Learnings
 
-* Heap Total
-* Heap Used
-* Heap Available
-* Process Memory Usage
+Building this project provided hands-on experience with:
 
-### Runtime Metrics
+Configuring and integrating Prometheus, Loki, and Grafana.
+Exposing custom application metrics in Node.js.
+Containerizing a multi-service environment with Docker Compose.
+Designing dashboards for effective system monitoring.
+🔮 Future Improvements
 
-* Event Loop Lag
-* Active Handlers
-* Active Requests
-* Node.js Version
+The platform can be extended in numerous ways:
 
-### Application Metrics
+Distributed Tracing: Integrate Jaeger or Tempo for end-to-end request tracing.
+Alerting: Add Alertmanager to send notifications (e.g., email, Slack) for critical conditions.
+Orchestration: Deploy on Kubernetes using Helm charts.
+Instrumentation: Adopt OpenTelemetry for standardized telemetry data collection.
+Custom Metrics: Add business-specific metrics (e.g., user signups, transactions).
+CI/CD: Automate the deployment and testing of the monitoring stack.
+🤝 Contributing
 
-* Request Counts
-* Response Monitoring
-* Service Availability
+Contributions, suggestions, and improvements are welcome!
+If you have an idea or find a bug, please feel free to open an issue or submit a pull request.
 
----
+Fork the Project
+Create your Feature Branch (git checkout -b feature/AmazingFeature)
+Commit your Changes (git commit -m 'Add some AmazingFeature')
+Push to the Branch (git push origin feature/AmazingFeature)
+Open a Pull Request
+📄 License
 
-# 🔍 Log Analysis
+Distributed under the MIT License. See LICENSE (if added) for more information.
 
-Using Loki, developers can:
+⭐ Support
 
-* Search logs by keywords
-* Filter logs by severity
-* Investigate failures
-* Correlate logs with metrics
-* Monitor application behavior in real time
+If you found this project useful, please consider giving it a star on GitHub! It helps others discover the project and motivates further improvements.
 
----
-
-# 🎯 Use Cases
-
-This project demonstrates concepts used in:
-
-* Backend Engineering
-* Site Reliability Engineering (SRE)
-* DevOps
-* Cloud Infrastructure
-* Distributed Systems
-* Production Monitoring
-
----
-
-# 📸 Screenshots
-
-## Grafana Dashboard
-
-![Grafana Dashboard](screenshots/dashboard.png)
-
-## Loki Logs
-
-![Loki Logs](screenshots/logs.png)
-
----
-
-# 📚 Key Learnings
-
-Building this project provided practical experience with:
-
-* Application Monitoring
-* Metrics Collection
-* Log Aggregation
-* Dashboard Design
-* Docker Networking
-* Production Observability Patterns
-* Performance Analysis
-* Infrastructure Monitoring
-
----
-
-# 🔮 Future Improvements
-
-* Distributed Tracing with Jaeger
-* Alerting with Alertmanager
-* Kubernetes Deployment
-* OpenTelemetry Integration
-* Custom Business Metrics
-* CI/CD Integration
-
----
-
-# 🤝 Contributing
-
-Contributions, suggestions, and improvements are welcome.
-
-Feel free to open an issue or submit a pull request.
-
----
-
-# ⭐ Support
-
-If you found this project useful, consider giving it a star.
-
-It helps others discover the project and motivates further improvements.
+Built with ❤️ by Aryan Vatsal (thor-51)
