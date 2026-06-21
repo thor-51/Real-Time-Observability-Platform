@@ -1,10 +1,10 @@
 # 📊 Real-Time Observability Platform
 
-A lightweight Node.js/Express service instrumented for observability — exposing Prometheus metrics out of the box and shipping structured logs to Loki, with Prometheus wired up via Docker Compose.
+A Node.js/Express service instrumented for observability — exposing Prometheus metrics out of the box and shipping structured logs to Loki, with Prometheus wired up via Docker Compose.
 
 ## Overview
 
-This repo is a small, hands-on example of instrumenting a Node.js application for monitoring instead of bolting observability on as an afterthought. The Express server exposes:
+This repo handles how to instrument a Node.js application for monitoring instead of bolting observability on as an afterthought. The Express server exposes:
 
 - A Prometheus-compatible `/metrics` endpoint with default Node.js runtime metrics plus two custom metrics (a request counter and a request-duration histogram).
 - Structured logs (via Winston) shipped to Loki.
