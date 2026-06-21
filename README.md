@@ -169,7 +169,3 @@ Contributions are welcome. To contribute:
 ## License
 
 `package.json` specifies the **ISC** license. No `LICENSE` file is currently included in the repository.
-
-## Author
-
-Built by **Aryan Vatsal** ([@thor-51](https://github.com/thor-51))
