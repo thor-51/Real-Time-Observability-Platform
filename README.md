@@ -12,6 +12,11 @@ This repo is a small, hands-on example of instrumenting a Node.js application fo
 
 Prometheus itself is started via Docker Compose, scraping the app's `/metrics` endpoint on an interval.
 
+### Dashboard Preview
+
+A Grafana dashboard built on top of this app's metrics, tracking process CPU usage, event loop lag, memory and heap detail (total/used/available), active handlers, process restart count, and Node.js version:
+<img width="2886" height="1660" alt="WhatsApp Image 2026-06-09 at 22 17 18" src="https://github.com/user-attachments/assets/c27cc418-ffd9-4bd9-95f4-ca28b8964bc8" />
+
 ## Tech Stack
 
 | Layer | Technology | Purpose |
