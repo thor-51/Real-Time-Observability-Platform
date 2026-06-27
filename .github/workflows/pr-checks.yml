@@ -1,0 +1,67 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  conventional-commits:
+    name: Commit Message Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check conventional commits
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: .commitlintrc.json
+
+  pr-size:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        run: |
+          LINES=$(git diff --stat origin/main...HEAD | tail -1 | grep -o '[0-9]* insertion' | grep -o '[0-9]*' || echo 0)
+          echo "Lines changed: $LINES"
+          if [ "$LINES" -gt 800 ]; then
+            echo "⚠️  This PR changes $LINES lines. Consider splitting it into smaller PRs."
+          fi
+
+  validate-configs:
+    name: Validate Config Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose
+        run: docker compose config --quiet
+
+      - name: Validate prometheus config
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/prometheus.yml:/etc/prometheus/prometheus.yml:ro \
+            -v ${{ github.workspace }}/alerts.yml:/etc/prometheus/alerts.yml:ro \
+            prom/prometheus:v2.51.2 \
+            promtool check config /etc/prometheus/prometheus.yml
+
+      - name: Validate alert rules
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/alerts.yml:/etc/prometheus/alerts.yml:ro \
+            prom/prometheus:v2.51.2 \
+            promtool check rules /etc/prometheus/alerts.yml
+
+      - name: Validate Grafana dashboard JSON
+        run: |
+          for f in grafana/dashboards/*.json; do
+            echo "Validating $f..."
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8')); console.log('✅ Valid JSON')"
+          done

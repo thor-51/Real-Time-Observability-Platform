@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    name: Lint & Test
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,14 +26,48 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint --if-present
+      - name: Run ESLint
+        run: npm run lint
 
-      - name: Run tests
-        run: npm test
+      - name: Check formatting (Prettier)
+        run: npm run format:check
+
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage --coverageReporters=lcov --coverageReporters=text
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+      - name: Enforce coverage threshold
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | node -e "
+            const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            console.log(d.total.lines.pct);
+          ")
+          echo "Line coverage: $COVERAGE%"
+          node -e "if ($COVERAGE < 70) { console.error('Coverage below 70%'); process.exit(1); }"
 
   docker:
-    name: Build Docker image
+    name: Build & Validate Docker
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -44,6 +82,20 @@ jobs:
           context: .
           push: false
           tags: observability-platform:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Validate docker-compose
+      - name: Validate docker-compose config
         run: docker compose config --quiet
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name smoke -p 8000:8000 \
+            -e NODE_ENV=production \
+            -e LOKI_HOST=localhost \
+            observability-platform:${{ github.sha }}
+          sleep 5
+          curl -sf http://localhost:8000/health | grep -q '"status":"healthy"'
+          curl -sf http://localhost:8000/ready
+          curl -sf http://localhost:8000/metrics | grep -q 'nodejs_'
+          docker stop smoke
