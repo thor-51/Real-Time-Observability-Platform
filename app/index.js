@@ -121,7 +121,7 @@ app.get('/error', (req, res, next) => {
 app.get('/cpu-load', (req, res) => {
   const iterations = parseInt(req.query.n) || 1e7;
   let result = 0;
-  for (let i = 0; i < iterations; i++) result += Math.sqrt(i);
+  for (let i = 0; i < iterations; i++) { result += Math.sqrt(i); }
   res.json({ result, iterations });
 });
 
